@@ -1,3 +1,7 @@
+@backgroundColour: lightblue;
+@foregroundColour: rebeccapurple;
+@barHeight: 80px;
+
 .content {
   display: flex;
   flex-direction: column;
@@ -6,14 +10,14 @@
 
   .header {
     text-align: center;
-    margin: 100px;
+    margin: 100px 20px;
   }
   
   .progress-bar-container {
     border: 3px solid black;
-    background-color: lightblue;
-    color: rebeccapurple;
-    height: 50px;
+    background-color: @backgroundColour;
+    color: @foregroundColour;
+    height: @barHeight;
     width: 75vw;
     font-size: 32px;
     position: relative;
@@ -26,8 +30,8 @@
       left: 0;
       top: 0;
       bottom: 0;
-      width: 0; /* This will get overwritten by the javascript */
-      background-color: rebeccapurple;
+      width: 0; // This will get overwritten by the javascript
+      background-color: @foregroundColour;
       overflow: hidden;
 
       .progress-bar-inner {
@@ -36,7 +40,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: lightblue;
+        color: @backgroundColour;
       }
     }
   }
