@@ -5,8 +5,8 @@ export const getPercentage = (start: Date, end: Date, now: Date) => {
   return 100 * (nowTime - startTime) / (endTime - startTime);
 }
 
-const setPercentage = (elementsToUpdate: Element[], bar: HTMLElement | null, percentage: number) => {
-  const textToShow = percentage.toFixed(6) + '%';
+const setPercentage = (elementsToUpdate: Element[], bar: HTMLElement | null, percentage: number, decimalPlaces: number) => {
+  const textToShow = percentage.toFixed(decimalPlaces) + '%';
   elementsToUpdate.forEach(element => {
     element.innerHTML = textToShow;
   });
@@ -15,12 +15,12 @@ const setPercentage = (elementsToUpdate: Element[], bar: HTMLElement | null, per
   }
 }
 
-export const initialiseProgressBar = (getProgress: () => number) => {
+export const initialiseProgressBar = (getProgress: () => number, decimalPlaces: number = 6) => {
   const elementsToUpdate = Array.from(document.getElementsByClassName('progress-value'));
   const bar = document.getElementById('progress-bar');
 
-  const update = () => setPercentage(elementsToUpdate, bar, getProgress());
-  
+  const update = () => setPercentage(elementsToUpdate, bar, getProgress(), decimalPlaces);
+
   setInterval(update, 50);
   update();
 }
