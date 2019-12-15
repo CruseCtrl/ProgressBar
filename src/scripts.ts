@@ -5,8 +5,14 @@ export const getPercentage = (start: Date, end: Date, now: Date) => {
   return 100 * (nowTime - startTime) / (endTime - startTime);
 }
 
+// https://stackoverflow.com/a/11818658/4921052
+const truncateToDecimalPlaces = (input: number, decimalPlaces: number) => {
+  var regex = new RegExp('^-?\\d+(?:\.\\d{0,' + (decimalPlaces || -1) + '})?');
+  return input.toString().match(regex)![0];
+}
+
 const setPercentage = (elementsToUpdate: Element[], bar: HTMLElement | null, percentage: number, decimalPlaces: number) => {
-  const textToShow = percentage.toFixed(decimalPlaces) + '%';
+  const textToShow = truncateToDecimalPlaces(percentage, decimalPlaces) + '%';
   elementsToUpdate.forEach(element => {
     element.innerHTML = textToShow;
   });
@@ -21,6 +27,6 @@ export const initialiseProgressBar = (getProgress: () => number, decimalPlaces: 
 
   const update = () => setPercentage(elementsToUpdate, bar, getProgress(), decimalPlaces);
 
-  setInterval(update, 50);
+  setInterval(update, 40); // 25 times per second
   update();
 }
