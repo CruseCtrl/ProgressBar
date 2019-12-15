@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+      "module": "commonjs",
+      "outDir": "./lib/",
+      "sourceMap": true,
+      "declaration": true,
+      "strict": true,
+      "noImplicitAny": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noImplicitReturns": true,
+      "noFallthroughCasesInSwitch": true
+  },
+  "include": [
+      "src/**/*"
+  ],
+  "exclude": [
+      ".git",
+      "node_modules"
+  ]
+}
