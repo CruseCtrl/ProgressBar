@@ -12,7 +12,9 @@ window.onload = () => {
     elementsToUpdate.forEach(element => {
       element.innerHTML = textToShow;
     });
-    bar.style.width = percentage + '%';
+    if (bar) {
+      bar.style.width = percentage + '%';
+    }
   }
 
   const update = () => {
@@ -22,4 +24,4 @@ window.onload = () => {
 
   setInterval(update, 100);
   update();
-}
+};

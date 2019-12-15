@@ -13,5 +13,8 @@
         "less": "^3.10.3",
         "parcel": "^2.0.0-alpha.3.2",
         "typescript": "^3.7.3"
+    },
+    "dependencies": {
+        "date-fns": "^2.8.1"
     }
 }
