@@ -15,8 +15,12 @@ const setPercentage = (elementsToUpdate: Element[], bar: HTMLElement | null, per
   }
 }
 
-export const initialiseProgressBar = (elementsToUpdate: Element[], bar: HTMLElement | null, getProgress: () => number) => {
+export const initialiseProgressBar = (getProgress: () => number) => {
+  const elementsToUpdate = Array.from(document.getElementsByClassName('progress-value'));
+  const bar = document.getElementById('progress-bar');
+
   const update = () => setPercentage(elementsToUpdate, bar, getProgress());
+  
   setInterval(update, 50);
   update();
 }
