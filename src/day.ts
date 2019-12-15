@@ -7,5 +7,5 @@ window.onload = () => {
     return getPercentage(startOfDay(now), startOfDay(addDays(now, 1)), now);
   }
 
-  initialiseProgressBar(getDayPercentage, 4);
+  initialiseProgressBar(getDayPercentage, 3);
 };

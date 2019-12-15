@@ -7,5 +7,5 @@ window.onload = () => {
     return getPercentage(startOfYear(now), startOfYear(addYears(now, 1)), now);
   }
 
-  initialiseProgressBar(getYearPercentage);
+  initialiseProgressBar(getYearPercentage, 6);
 };
