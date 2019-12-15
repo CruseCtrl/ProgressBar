@@ -1,14 +1,23 @@
+import { startOfYear, endOfYear } from 'date-fns';
+
 window.onload = () => {
   const elementsToUpdate = Array.from(document.getElementsByClassName('progress-value'));
   const bar = document.getElementById('progress-bar');
 
-  // const getYearPercentage = () => {
-  //   const now = new Date();
-  //   const startOfYear
-  // }
+  const getYearPercentage = () => {
+    const now = new Date();
+    return getPercentage(startOfYear(now), endOfYear(now), now);
+  }
+
+  const getPercentage = (start: Date, end: Date, now: Date) => {
+    const startTime = start.getTime();
+    const endTime = end.getTime();
+    const nowTime = now.getTime();
+    return 100 * (nowTime - startTime) / (endTime - startTime);
+  }
 
   const setPercentage = (percentage: number) => {
-    const textToShow = percentage.toFixed(1) + '%';
+    const textToShow = percentage.toFixed(6) + '%';
     elementsToUpdate.forEach(element => {
       element.innerHTML = textToShow;
     });
@@ -18,10 +27,9 @@ window.onload = () => {
   }
 
   const update = () => {
-    const date = new Date();
-    setPercentage((date.getTime()/1000) % 100);
+    setPercentage(getYearPercentage());
   }
 
-  setInterval(update, 100);
+  setInterval(update, 50);
   update();
 };
