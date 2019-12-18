@@ -4,6 +4,7 @@ export type Options = {
   getIntervalStartTime: (now: Date) => Date,
   getIntervalEndTime: (now: Date) => Date,
   decimalPlaces: number,
+  name: string,
 }
 
 export class ProgressBar {

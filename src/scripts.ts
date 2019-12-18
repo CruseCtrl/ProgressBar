@@ -10,30 +10,35 @@ const yearOptions: Options = {
   getIntervalStartTime: startOfYear,
   getIntervalEndTime: now => startOfYear(addYears(now, 1)),
   decimalPlaces: 6,
+  name: 'This year',
 }
 
 const monthOptions: Options = {
   getIntervalStartTime: startOfMonth,
   getIntervalEndTime: now => startOfMonth(addMonths(now, 1)),
   decimalPlaces: 5,
+  name: 'This month',
 }
 
 const dayOptions: Options = {
   getIntervalStartTime: startOfDay,
   getIntervalEndTime: now => startOfDay(addDays(now, 1)),
   decimalPlaces: 3,
+  name: 'Today',
 }
 
 const hourOptions: Options = {
   getIntervalStartTime: startOfHour,
   getIntervalEndTime: now => startOfHour(addHours(now, 1)),
   decimalPlaces: 2,
+  name: 'Current hour',
 }
 
 const minuteOptions: Options = {
   getIntervalStartTime: startOfMinute,
   getIntervalEndTime: now => startOfMinute(addMinutes(now, 1)),
   decimalPlaces: 0,
+  name: 'Current minute',
 }
 
 const getOptions = (): Options => {
@@ -57,5 +62,12 @@ const getOptions = (): Options => {
 }
 
 window.onload = () => {
-  new ProgressBar(getOptions());
+  const options = getOptions();
+  new ProgressBar(options);
+  
+  document.title += ` - ${options.name}`;
+  const nameElement = document.getElementById('name');
+  if (nameElement) {
+    nameElement.innerHTML = options.name;
+  }
 };
