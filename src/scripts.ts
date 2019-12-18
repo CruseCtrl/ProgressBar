@@ -1,32 +1,36 @@
-export const getPercentage = (start: Date, end: Date, now: Date) => {
-  const startTime = start.getTime();
-  const endTime = end.getTime();
-  const nowTime = now.getTime();
-  return 100 * (nowTime - startTime) / (endTime - startTime);
-}
+import { Options, ProgressBar } from "./progressBar";
+import { startOfYear, addYears, startOfMonth, addMonths, startOfDay, addDays, startOfHour, addHours, startOfMinute, addMinutes } from "date-fns";
 
-// https://stackoverflow.com/a/11818658/4921052
-const truncateToDecimalPlaces = (input: number, decimalPlaces: number) => {
-  var regex = new RegExp('^-?\\d+(?:\.\\d{0,' + (decimalPlaces || -1) + '})?');
-  return input.toString().match(regex)![0];
-}
-
-const setPercentage = (elementsToUpdate: Element[], bar: HTMLElement | null, percentage: number, decimalPlaces: number) => {
-  const textToShow = truncateToDecimalPlaces(percentage, decimalPlaces) + '%';
-  elementsToUpdate.forEach(element => {
-    element.innerHTML = textToShow;
-  });
-  if (bar) {
-    bar.style.width = percentage + '%';
+window.onload = () => {
+  const yearOptions: Options = {
+    getIntervalStartTime: startOfYear,
+    getIntervalEndTime: now => startOfYear(addYears(now, 1)),
+    decimalPlaces: 6
   }
-}
 
-export const initialiseProgressBar = (getProgress: () => number, decimalPlaces: number) => {
-  const elementsToUpdate = Array.from(document.getElementsByClassName('progress-value'));
-  const bar = document.getElementById('progress-bar');
+  const monthOptions: Options = {
+    getIntervalStartTime: startOfMonth,
+    getIntervalEndTime: now => startOfMonth(addMonths(now, 1)),
+    decimalPlaces: 6
+  }
 
-  const update = () => setPercentage(elementsToUpdate, bar, getProgress(), decimalPlaces);
+  const dayOptions: Options = {
+    getIntervalStartTime: startOfDay,
+    getIntervalEndTime: now => startOfDay(addDays(now, 1)),
+    decimalPlaces: 6
+  }
 
-  setInterval(update, 40); // 25 times per second
-  update();
-}
+  const hourOptions: Options = {
+    getIntervalStartTime: startOfHour,
+    getIntervalEndTime: now => startOfHour(addHours(now, 1)),
+    decimalPlaces: 6
+  }
+
+  const minuteOptions: Options = {
+    getIntervalStartTime: startOfMinute,
+    getIntervalEndTime: now => startOfMinute(addMinutes(now, 1)),
+    decimalPlaces: 6
+  }
+
+  new ProgressBar(yearOptions);
+};
