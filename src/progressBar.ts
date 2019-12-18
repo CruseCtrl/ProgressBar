@@ -24,13 +24,13 @@ export class ProgressBar {
     this.updatePage();
     }
 
-  updateInterval = () => {
+  private updateInterval() {
     const now = new Date();
     this.intervalStartTime = this.options.getIntervalStartTime(now);
     this.intervalEndTime = this.options.getIntervalEndTime(now);
   }
 
-  updatePage = () => {
+  private updatePage() {
     const now = new Date();
     if (now >= this.intervalEndTime) {
       this.updateInterval();
