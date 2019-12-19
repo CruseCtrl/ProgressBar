@@ -54,6 +54,10 @@ window.onload = () => {
   const elementsToUpdate = Array.from(document.getElementsByClassName('progress-value'));
   const bar = document.getElementById('progress-bar');
 
+  if (!bar) {
+    throw new Error('Can\'t find element with id "progress-bar"');
+  }
+
   new ProgressBar(options, elementsToUpdate, bar);
   
   document.title += ` - ${options.name}`;

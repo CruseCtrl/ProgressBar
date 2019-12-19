@@ -10,22 +10,20 @@ export type Options = {
 export class ProgressBar {
   private options: Options;
   private elementsToUpdate: Element[];
-  private bar: HTMLElement | null;
+  private bar: HTMLElement;
   private startTime!: Date;
   private endTime!: Date;
   private intervalId?: number;
 
-  constructor(options: Options, elementsToUpdate: Element[], bar: HTMLElement | null) {
+  constructor(options: Options, elementsToUpdate: Element[], bar: HTMLElement) {
     this.options = options;
     this.elementsToUpdate = elementsToUpdate;
     this.bar = bar;
 
-    this.updateInterval();
-
-    this.updatePage();
+    this.updateBounds();
   }
 
-  private updateInterval = () => {
+  private updateBounds = () => {
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }
@@ -39,22 +37,36 @@ export class ProgressBar {
 
     const timePerUpdate = totalMilliseconds / totalUpdates;
 
-    this.intervalId = setInterval(this.updatePage, timePerUpdate);
+    const percentage = getPercentage(this.startTime, this.endTime, now);
+    this.setDisplayedValue(percentage);
+
+    const millisecondsUntilEndTime = this.endTime.getTime() - now.getTime();
+
+    this.intervalId = setInterval(this.updateDisplayedValue, timePerUpdate);
+
+    this.animateBar(percentage, millisecondsUntilEndTime);
+    setTimeout(this.updateBounds, millisecondsUntilEndTime);
   }
 
-  private updatePage = () => {
-    const now = new Date();
-    if (now >= this.endTime) {
-      this.updateInterval();
-    }
-    const percentage = getPercentage(this.startTime, this.endTime, now);
+  private updateDisplayedValue = () =>
+    this.setDisplayedValue(getPercentage(this.startTime, this.endTime, new Date()))
+
+  private setDisplayedValue = (percentage: number) => {
     const textToShow = truncateToDecimalPlaces(percentage, this.options.decimalPlaces) + '%';
-    
+
     this.elementsToUpdate.forEach(element => {
       element.innerHTML = textToShow;
     });
-    if (this.bar) {
+  }
+
+  private animateBar = (percentage: number, millisecondsUntilEndTime: number) => {
+    this.bar.style.transitionDuration = '0ms';
+    window.requestAnimationFrame(() => {
       this.bar.style.width = percentage + '%';
-    }
+      window.requestAnimationFrame(() => {
+        this.bar.style.transitionDuration = `${millisecondsUntilEndTime}ms`;
+        this.bar.style.width = '100%';
+      });
+    });
   }
 }
