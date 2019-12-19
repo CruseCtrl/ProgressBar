@@ -8,11 +8,11 @@ export type Options = {
 }
 
 export class ProgressBar {
-  options: Options;
-  elementsToUpdate: Element[];
-  bar: HTMLElement | null;
-  intervalStartTime!: Date;
-  intervalEndTime!: Date;
+  private options: Options;
+  private elementsToUpdate: Element[];
+  private bar: HTMLElement | null;
+  private intervalStartTime!: Date;
+  private intervalEndTime!: Date;
 
   constructor(options: Options) {
     this.options = options;
@@ -22,15 +22,15 @@ export class ProgressBar {
 
     setInterval(this.updatePage, 40); // 25 times per second
     this.updatePage();
-    }
+  }
 
-  private updateInterval() {
+  private updateInterval = () => {
     const now = new Date();
     this.intervalStartTime = this.options.getIntervalStartTime(now);
     this.intervalEndTime = this.options.getIntervalEndTime(now);
   }
 
-  private updatePage() {
+  private updatePage = () => {
     const now = new Date();
     if (now >= this.intervalEndTime) {
       this.updateInterval();
