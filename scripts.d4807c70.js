@@ -148,41 +148,76 @@ var helpers_1 = require("./helpers");
 var ProgressBar =
 /** @class */
 function () {
-  function ProgressBar(options) {
+  function ProgressBar(options, elementsToUpdate, bar) {
     var _this = this;
 
-    this.updateInterval = function () {
-      var now = new Date();
-      _this.intervalStartTime = _this.options.getIntervalStartTime(now);
-      _this.intervalEndTime = _this.options.getIntervalEndTime(now);
-    };
+    this.intervalId = null;
 
-    this.updatePage = function () {
-      var now = new Date();
-
-      if (now >= _this.intervalEndTime) {
-        _this.updateInterval();
+    this.updateBounds = function () {
+      if (_this.intervalId) {
+        clearInterval(_this.intervalId);
+        _this.intervalId = null;
       }
 
-      var percentage = helpers_1.getPercentage(_this.intervalStartTime, _this.intervalEndTime, now);
+      var now = new Date();
+      _this.startTime = _this.options.getStartTime(now);
+      _this.endTime = _this.options.getEndTime(now);
+
+      var totalMilliseconds = _this.endTime.getTime() - _this.startTime.getTime();
+
+      var totalUpdates = 100 * Math.pow(10, _this.options.decimalPlaces);
+      var millisecondsPerUpdate = totalMilliseconds / totalUpdates;
+      var percentage = helpers_1.getPercentage(_this.startTime, _this.endTime, now);
+
+      _this.setDisplayedValue(percentage);
+
+      var millisecondsUntilEndTime = _this.endTime.getTime() - now.getTime();
+
+      _this.startIntervalAtNextTick(millisecondsPerUpdate, millisecondsUntilEndTime);
+
+      _this.animateBar(percentage, millisecondsUntilEndTime);
+
+      setTimeout(_this.updateBounds, millisecondsUntilEndTime);
+    };
+
+    this.startIntervalAtNextTick = function (millisecondsPerUpdate, millisecondsUntilEndTime) {
+      setTimeout(function () {
+        if (_this.intervalId == null) {
+          // Don't do anything if there's already another interval running
+          _this.intervalId = setInterval(_this.updateDisplayedValue, millisecondsPerUpdate);
+
+          _this.updateDisplayedValue();
+        }
+      }, millisecondsUntilEndTime % millisecondsPerUpdate);
+    };
+
+    this.animateBar = function (percentage, millisecondsUntilEndTime) {
+      _this.bar.style.transitionDuration = '0ms';
+      window.requestAnimationFrame(function () {
+        _this.bar.style.width = percentage + '%';
+        window.requestAnimationFrame(function () {
+          _this.bar.style.transitionDuration = millisecondsUntilEndTime + "ms";
+          _this.bar.style.width = '100%';
+        });
+      });
+    };
+
+    this.updateDisplayedValue = function () {
+      return _this.setDisplayedValue(helpers_1.getPercentage(_this.startTime, _this.endTime, new Date()));
+    };
+
+    this.setDisplayedValue = function (percentage) {
       var textToShow = helpers_1.truncateToDecimalPlaces(percentage, _this.options.decimalPlaces) + '%';
 
       _this.elementsToUpdate.forEach(function (element) {
         element.innerHTML = textToShow;
       });
-
-      if (_this.bar) {
-        _this.bar.style.width = percentage + '%';
-      }
     };
 
     this.options = options;
-    this.elementsToUpdate = Array.from(document.getElementsByClassName('progress-value'));
-    this.bar = document.getElementById('progress-bar');
-    this.updateInterval();
-    setInterval(this.updatePage, 40); // 25 times per second
-
-    this.updatePage();
+    this.elementsToUpdate = elementsToUpdate;
+    this.bar = bar;
+    this.updateBounds();
   }
 
   return ProgressBar;
@@ -17581,74 +17616,72 @@ var date_fns_1 = require("date-fns");
 
 var queryString = __importStar(require("query-string"));
 
-var yearOptions = {
-  getIntervalStartTime: date_fns_1.startOfYear,
-  getIntervalEndTime: function getIntervalEndTime(now) {
-    return date_fns_1.startOfYear(date_fns_1.addYears(now, 1));
-  },
-  decimalPlaces: 6,
-  name: 'This year'
-};
-var monthOptions = {
-  getIntervalStartTime: date_fns_1.startOfMonth,
-  getIntervalEndTime: function getIntervalEndTime(now) {
-    return date_fns_1.startOfMonth(date_fns_1.addMonths(now, 1));
-  },
-  decimalPlaces: 5,
-  name: 'This month'
-};
-var dayOptions = {
-  getIntervalStartTime: date_fns_1.startOfDay,
-  getIntervalEndTime: function getIntervalEndTime(now) {
-    return date_fns_1.startOfDay(date_fns_1.addDays(now, 1));
-  },
-  decimalPlaces: 3,
-  name: 'Today'
-};
-var hourOptions = {
-  getIntervalStartTime: date_fns_1.startOfHour,
-  getIntervalEndTime: function getIntervalEndTime(now) {
-    return date_fns_1.startOfHour(date_fns_1.addHours(now, 1));
-  },
-  decimalPlaces: 2,
-  name: 'Current hour'
-};
-var minuteOptions = {
-  getIntervalStartTime: date_fns_1.startOfMinute,
-  getIntervalEndTime: function getIntervalEndTime(now) {
-    return date_fns_1.startOfMinute(date_fns_1.addMinutes(now, 1));
-  },
-  decimalPlaces: 0,
-  name: 'Current minute'
-};
-
 var getOptions = function getOptions() {
   var queryOptions = queryString.parse(window.location.search);
 
   switch (queryOptions.mode) {
-    case 'year':
-      return yearOptions;
-
     case 'month':
-      return monthOptions;
+      return {
+        getStartTime: date_fns_1.startOfMonth,
+        getEndTime: function getEndTime(now) {
+          return date_fns_1.startOfMonth(date_fns_1.addMonths(now, 1));
+        },
+        decimalPlaces: 5,
+        name: 'This month'
+      };
 
     case 'day':
-      return dayOptions;
+      return {
+        getStartTime: date_fns_1.startOfDay,
+        getEndTime: function getEndTime(now) {
+          return date_fns_1.startOfDay(date_fns_1.addDays(now, 1));
+        },
+        decimalPlaces: 3,
+        name: 'Today'
+      };
 
     case 'hour':
-      return hourOptions;
+      return {
+        getStartTime: date_fns_1.startOfHour,
+        getEndTime: function getEndTime(now) {
+          return date_fns_1.startOfHour(date_fns_1.addHours(now, 1));
+        },
+        decimalPlaces: 2,
+        name: 'Current hour'
+      };
 
     case 'minute':
-      return minuteOptions;
+      return {
+        getStartTime: date_fns_1.startOfMinute,
+        getEndTime: function getEndTime(now) {
+          return date_fns_1.startOfMinute(date_fns_1.addMinutes(now, 1));
+        },
+        decimalPlaces: 0,
+        name: 'Current minute'
+      };
 
     default:
-      return yearOptions;
+      return {
+        getStartTime: date_fns_1.startOfYear,
+        getEndTime: function getEndTime(now) {
+          return date_fns_1.startOfYear(date_fns_1.addYears(now, 1));
+        },
+        decimalPlaces: 6,
+        name: 'This year'
+      };
   }
 };
 
 window.onload = function () {
   var options = getOptions();
-  new progressBar_1.ProgressBar(options);
+  var elementsToUpdate = Array.from(document.getElementsByClassName('progress-value'));
+  var bar = document.getElementById('progress-bar');
+
+  if (!bar) {
+    throw new Error('Can\'t find element with id "progress-bar"');
+  }
+
+  new progressBar_1.ProgressBar(options, elementsToUpdate, bar);
   document.title += " - " + options.name;
   var nameElement = document.getElementById('name');
 
@@ -17684,7 +17717,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51842" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53217" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -28,6 +28,7 @@
   top: 0;
   bottom: 0;
   width: 0;
+  transition: width 0s linear;
   background-color: rebeccapurple;
   overflow: hidden;
 }
