@@ -13,7 +13,7 @@ export class ProgressBar {
   private bar: HTMLElement;
   private startTime!: Date;
   private endTime!: Date;
-  private intervalId?: number;
+  private intervalId: number | null = null;
 
   constructor(options: Options, elementsToUpdate: Element[], bar: HTMLElement) {
     this.options = options;
@@ -26,6 +26,7 @@ export class ProgressBar {
   private updateBounds = () => {
     if (this.intervalId) {
       clearInterval(this.intervalId);
+      this.intervalId = null;
     }
 
     const now = new Date();
@@ -35,28 +36,27 @@ export class ProgressBar {
     const totalMilliseconds = this.endTime.getTime() - this.startTime.getTime();
     const totalUpdates = 100 * (10 ** this.options.decimalPlaces);
 
-    const timePerUpdate = totalMilliseconds / totalUpdates;
+    const millisecondsPerUpdate = totalMilliseconds / totalUpdates;
 
     const percentage = getPercentage(this.startTime, this.endTime, now);
     this.setDisplayedValue(percentage);
 
     const millisecondsUntilEndTime = this.endTime.getTime() - now.getTime();
 
-    this.intervalId = setInterval(this.updateDisplayedValue, timePerUpdate);
+    this.startIntervalAtNextTick(millisecondsPerUpdate, millisecondsUntilEndTime);
 
     this.animateBar(percentage, millisecondsUntilEndTime);
     setTimeout(this.updateBounds, millisecondsUntilEndTime);
   }
 
-  private updateDisplayedValue = () =>
-    this.setDisplayedValue(getPercentage(this.startTime, this.endTime, new Date()))
-
-  private setDisplayedValue = (percentage: number) => {
-    const textToShow = truncateToDecimalPlaces(percentage, this.options.decimalPlaces) + '%';
-
-    this.elementsToUpdate.forEach(element => {
-      element.innerHTML = textToShow;
-    });
+  private startIntervalAtNextTick = (millisecondsPerUpdate: number, millisecondsUntilEndTime: number) => {
+    setTimeout(() => {
+      if (this.intervalId == null) { // Don't do anything if there's already another interval running
+        this.intervalId = setInterval(this.updateDisplayedValue, millisecondsPerUpdate);
+        this.updateDisplayedValue();
+      }
+    },
+    millisecondsUntilEndTime % millisecondsPerUpdate);
   }
 
   private animateBar = (percentage: number, millisecondsUntilEndTime: number) => {
@@ -67,6 +67,17 @@ export class ProgressBar {
         this.bar.style.transitionDuration = `${millisecondsUntilEndTime}ms`;
         this.bar.style.width = '100%';
       });
+    });
+  }
+
+  private updateDisplayedValue = () =>
+    this.setDisplayedValue(getPercentage(this.startTime, this.endTime, new Date()))
+
+  private setDisplayedValue = (percentage: number) => {
+    const textToShow = truncateToDecimalPlaces(percentage, this.options.decimalPlaces) + '%';
+
+    this.elementsToUpdate.forEach(element => {
+      element.innerHTML = textToShow;
     });
   }
 }
