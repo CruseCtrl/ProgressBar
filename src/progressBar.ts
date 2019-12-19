@@ -14,10 +14,11 @@ export class ProgressBar {
   private intervalStartTime!: Date;
   private intervalEndTime!: Date;
 
-  constructor(options: Options) {
+  constructor(options: Options, elementsToUpdate: Element[], bar: HTMLElement | null) {
     this.options = options;
-    this.elementsToUpdate = Array.from(document.getElementsByClassName('progress-value'));
-    this.bar = document.getElementById('progress-bar');
+    this.elementsToUpdate = elementsToUpdate;
+    this.bar = bar;
+    
     this.updateInterval();
 
     setInterval(this.updatePage, 40); // 25 times per second
