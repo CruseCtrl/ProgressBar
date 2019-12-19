@@ -1,8 +1,8 @@
 import { truncateToDecimalPlaces, getPercentage } from "./helpers";
 
 export type Options = {
-  getIntervalStartTime: (now: Date) => Date,
-  getIntervalEndTime: (now: Date) => Date,
+  getStartTime: (now: Date) => Date,
+  getEndTime: (now: Date) => Date,
   decimalPlaces: number,
   name: string,
 }
@@ -11,32 +11,43 @@ export class ProgressBar {
   private options: Options;
   private elementsToUpdate: Element[];
   private bar: HTMLElement | null;
-  private intervalStartTime!: Date;
-  private intervalEndTime!: Date;
+  private startTime!: Date;
+  private endTime!: Date;
+  private intervalId?: number;
 
   constructor(options: Options, elementsToUpdate: Element[], bar: HTMLElement | null) {
     this.options = options;
     this.elementsToUpdate = elementsToUpdate;
     this.bar = bar;
-    
+
     this.updateInterval();
 
-    setInterval(this.updatePage, 40); // 25 times per second
     this.updatePage();
   }
 
   private updateInterval = () => {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
+
     const now = new Date();
-    this.intervalStartTime = this.options.getIntervalStartTime(now);
-    this.intervalEndTime = this.options.getIntervalEndTime(now);
+    this.startTime = this.options.getStartTime(now);
+    this.endTime = this.options.getEndTime(now);
+
+    const totalMilliseconds = this.endTime.getTime() - this.startTime.getTime();
+    const totalUpdates = 100 * (10 ** this.options.decimalPlaces);
+
+    const timePerUpdate = totalMilliseconds / totalUpdates;
+
+    this.intervalId = setInterval(this.updatePage, timePerUpdate);
   }
 
   private updatePage = () => {
     const now = new Date();
-    if (now >= this.intervalEndTime) {
+    if (now >= this.endTime) {
       this.updateInterval();
     }
-    const percentage = getPercentage(this.intervalStartTime, this.intervalEndTime, now);
+    const percentage = getPercentage(this.startTime, this.endTime, now);
     const textToShow = truncateToDecimalPlaces(percentage, this.options.decimalPlaces) + '%';
     
     this.elementsToUpdate.forEach(element => {
