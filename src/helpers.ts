@@ -7,6 +7,6 @@ export const getPercentage = (start: Date, end: Date, now: Date) => {
 
 // https://stackoverflow.com/a/11818658/4921052
 export const truncateToDecimalPlaces = (input: number, decimalPlaces: number) => {
-  var regex = new RegExp('^-?\\d+(?:\.\\d{0,' + (decimalPlaces || -1) + '})?');
+  const regex = new RegExp('^-?\\d+(?:\.\\d{0,' + (decimalPlaces || -1) + '})?');
   return input.toString().match(regex)![0];
 };

@@ -47,7 +47,7 @@ export class ProgressBar {
 
     this.animateBar(percentage, millisecondsUntilEndTime);
     setTimeout(this.updateBounds, millisecondsUntilEndTime);
-  }
+  };
 
   private startIntervalAtNextTick = (millisecondsPerUpdate: number, millisecondsUntilEndTime: number) => {
     setTimeout(() => {
@@ -57,7 +57,7 @@ export class ProgressBar {
       }
     },
     millisecondsUntilEndTime % millisecondsPerUpdate);
-  }
+  };
 
   private animateBar = (percentage: number, millisecondsUntilEndTime: number) => {
     this.bar.style.transitionDuration = '0ms';
@@ -68,10 +68,10 @@ export class ProgressBar {
         this.bar.style.width = '100%';
       });
     });
-  }
+  };
 
   private updateDisplayedValue = () =>
-    this.setDisplayedValue(getPercentage(this.startTime, this.endTime, new Date()))
+    this.setDisplayedValue(getPercentage(this.startTime, this.endTime, new Date()));
 
   private setDisplayedValue = (percentage: number) => {
     const textToShow = truncateToDecimalPlaces(percentage, this.options.decimalPlaces) + '%';

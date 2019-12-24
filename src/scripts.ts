@@ -47,7 +47,7 @@ const getOptions = (): Options => {
         name: 'This year',
       };
   }
-}
+};
 
 window.onload = () => {
   const options = getOptions();
