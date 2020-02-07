@@ -136,6 +136,15 @@ exports.truncateToDecimalPlaces = function (input, decimalPlaces) {
   var regex = new RegExp('^-?\\d+(?:\.\\d{0,' + (decimalPlaces || -1) + '})?');
   return input.toString().match(regex)[0];
 };
+
+exports.getNumberOfDecimalPlaces = function (totalMilliseconds) {
+  // The last digit will change at least every 2 seconds (and at most every 0.2 seconds)
+  var maximumTimeBetweenSteps = 2000;
+  var minimumNumberOfSteps = totalMilliseconds / maximumTimeBetweenSteps;
+  var numberOfSignificantDigits = Math.ceil(Math.log10(minimumNumberOfSteps)); // There will be 2 non-decimal places, we need 2 fewer decimal places than significant digits
+
+  return Math.max(numberOfSignificantDigits - 2, 0);
+};
 },{}],"progressBar.ts":[function(require,module,exports) {
 "use strict";
 
@@ -165,7 +174,8 @@ function () {
 
       var totalMilliseconds = _this.endTime.getTime() - _this.startTime.getTime();
 
-      var totalUpdates = 100 * Math.pow(10, _this.options.decimalPlaces);
+      _this.decimalPlaces = _this.options.decimalPlaces == null ? helpers_1.getNumberOfDecimalPlaces(totalMilliseconds) : _this.options.decimalPlaces;
+      var totalUpdates = 100 * Math.pow(10, _this.decimalPlaces);
       var millisecondsPerUpdate = totalMilliseconds / totalUpdates;
       var percentage = helpers_1.getPercentage(_this.startTime, _this.endTime, now);
 
@@ -220,7 +230,7 @@ function () {
     };
 
     this.setDisplayedValue = function (percentage) {
-      var textToShow = helpers_1.truncateToDecimalPlaces(percentage, _this.options.decimalPlaces) + '%';
+      var textToShow = helpers_1.truncateToDecimalPlaces(percentage, _this.decimalPlaces) + '%';
 
       _this.elementsToUpdate.forEach(function (element) {
         element.innerHTML = textToShow;
@@ -17639,7 +17649,6 @@ var getOptions = function getOptions() {
         getEndTime: function getEndTime(now) {
           return date_fns_1.startOfMonth(date_fns_1.addMonths(now, 1));
         },
-        decimalPlaces: 5,
         name: 'This month'
       };
 
@@ -17649,7 +17658,6 @@ var getOptions = function getOptions() {
         getEndTime: function getEndTime(now) {
           return date_fns_1.startOfDay(date_fns_1.addDays(now, 1));
         },
-        decimalPlaces: 3,
         name: 'Today'
       };
 
@@ -17659,7 +17667,6 @@ var getOptions = function getOptions() {
         getEndTime: function getEndTime(now) {
           return date_fns_1.startOfHour(date_fns_1.addHours(now, 1));
         },
-        decimalPlaces: 2,
         name: 'Current hour'
       };
 
@@ -17669,7 +17676,6 @@ var getOptions = function getOptions() {
         getEndTime: function getEndTime(now) {
           return date_fns_1.startOfMinute(date_fns_1.addMinutes(now, 1));
         },
-        decimalPlaces: 0,
         name: 'Current minute'
       };
 
@@ -17679,7 +17685,6 @@ var getOptions = function getOptions() {
         getEndTime: function getEndTime(now) {
           return date_fns_1.startOfYear(date_fns_1.addYears(now, 1));
         },
-        decimalPlaces: 6,
         name: 'This year'
       };
   }
@@ -17730,7 +17735,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53005" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54926" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
