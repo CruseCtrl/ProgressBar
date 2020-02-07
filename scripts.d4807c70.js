@@ -178,6 +178,7 @@ function () {
       _this.animateBar(percentage, millisecondsUntilEndTime);
 
       setTimeout(_this.updateBounds, millisecondsUntilEndTime);
+      document.addEventListener("visibilitychange", _this.visibilityCharge);
     };
 
     this.startIntervalAtNextTick = function (millisecondsPerUpdate, millisecondsUntilEndTime) {
@@ -189,6 +190,18 @@ function () {
           _this.updateDisplayedValue();
         }
       }, millisecondsUntilEndTime % millisecondsPerUpdate);
+    }; // Some browsers (Chrome & Firefox) disable css animations when the tab is in the background,
+    // so we need to reset the bar when the tab is visible again
+
+
+    this.visibilityCharge = function () {
+      if (document.visibilityState === 'visible') {
+        var now = new Date();
+        var percentage = helpers_1.getPercentage(_this.startTime, _this.endTime, now);
+        var millisecondsUntilEndTime = _this.endTime.getTime() - now.getTime();
+
+        _this.animateBar(percentage, millisecondsUntilEndTime);
+      }
     };
 
     this.animateBar = function (percentage, millisecondsUntilEndTime) {
@@ -17717,7 +17730,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56970" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53005" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
