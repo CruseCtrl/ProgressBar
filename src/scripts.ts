@@ -14,28 +14,24 @@ const getOptions = (): Options => {
       return {
         getStartTime: startOfMonth,
         getEndTime: now => startOfMonth(addMonths(now, 1)),
-        decimalPlaces: 5,
         name: 'This month',
       };
     case 'day':
       return {
         getStartTime: startOfDay,
         getEndTime: now => startOfDay(addDays(now, 1)),
-        decimalPlaces: 3,
         name: 'Today',
       };
     case 'hour':
       return {
         getStartTime: startOfHour,
         getEndTime: now => startOfHour(addHours(now, 1)),
-        decimalPlaces: 2,
         name: 'Current hour',
       };
     case 'minute':
       return {
         getStartTime: startOfMinute,
         getEndTime: now => startOfMinute(addMinutes(now, 1)),
-        decimalPlaces: 0,
         name: 'Current minute',
       };
 
@@ -43,7 +39,6 @@ const getOptions = (): Options => {
       return {
         getStartTime: startOfYear,
         getEndTime: now => startOfYear(addYears(now, 1)),
-        decimalPlaces: 6,
         name: 'This year',
       };
   }

@@ -1,9 +1,9 @@
-import { truncateToDecimalPlaces, getPercentage } from "./helpers";
+import {truncateToDecimalPlaces, getPercentage, getNumberOfDecimalPlaces} from "./helpers";
 
 export type Options = {
   getStartTime: (now: Date) => Date,
   getEndTime: (now: Date) => Date,
-  decimalPlaces: number,
+  decimalPlaces?: number,
   name: string,
 }
 
@@ -13,6 +13,7 @@ export class ProgressBar {
   private bar: HTMLElement;
   private startTime!: Date;
   private endTime!: Date;
+  private decimalPlaces!: number;
   private intervalId: number | null = null;
 
   constructor(options: Options, elementsToUpdate: Element[], bar: HTMLElement) {
@@ -34,8 +35,11 @@ export class ProgressBar {
     this.endTime = this.options.getEndTime(now);
 
     const totalMilliseconds = this.endTime.getTime() - this.startTime.getTime();
-    const totalUpdates = 100 * (10 ** this.options.decimalPlaces);
+    this.decimalPlaces = this.options.decimalPlaces == null
+        ? getNumberOfDecimalPlaces(totalMilliseconds)
+        : this.options.decimalPlaces;
 
+    const totalUpdates = 100 * (10 ** this.decimalPlaces);
     const millisecondsPerUpdate = totalMilliseconds / totalUpdates;
 
     const percentage = getPercentage(this.startTime, this.endTime, now);
@@ -86,7 +90,7 @@ export class ProgressBar {
     this.setDisplayedValue(getPercentage(this.startTime, this.endTime, new Date()));
 
   private setDisplayedValue = (percentage: number) => {
-    const textToShow = truncateToDecimalPlaces(percentage, this.options.decimalPlaces) + '%';
+    const textToShow = truncateToDecimalPlaces(percentage, this.decimalPlaces) + '%';
 
     this.elementsToUpdate.forEach(element => {
       element.innerHTML = textToShow;
