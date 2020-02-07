@@ -47,6 +47,7 @@ export class ProgressBar {
 
     this.animateBar(percentage, millisecondsUntilEndTime);
     setTimeout(this.updateBounds, millisecondsUntilEndTime);
+    document.addEventListener("visibilitychange", this.visibilityCharge);
   };
 
   private startIntervalAtNextTick = (millisecondsPerUpdate: number, millisecondsUntilEndTime: number) => {
@@ -57,6 +58,17 @@ export class ProgressBar {
       }
     },
     millisecondsUntilEndTime % millisecondsPerUpdate);
+  };
+
+  // Some browsers (Chrome & Firefox) disable css animations when the tab is in the background,
+  // so we need to reset the bar when the tab is visible again
+  private visibilityCharge = () => {
+    if (document.visibilityState === 'visible') {
+      const now = new Date();
+      const percentage = getPercentage(this.startTime, this.endTime, now);
+      const millisecondsUntilEndTime = this.endTime.getTime() - now.getTime();
+      this.animateBar(percentage, millisecondsUntilEndTime);
+    }
   };
 
   private animateBar = (percentage: number, millisecondsUntilEndTime: number) => {
