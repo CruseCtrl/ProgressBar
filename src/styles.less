@@ -2,6 +2,11 @@
 @foregroundColour: rebeccapurple;
 @barHeight: 80px;
 
+@barWidth: 75vw;
+@barWidthMobile: 90vw;
+
+@mobileBreakpoint: 1000px;
+
 .content {
   display: flex;
   flex-direction: column;
@@ -21,12 +26,16 @@
     background-color: @backgroundColour;
     color: @foregroundColour;
     height: @barHeight;
-    width: 75vw;
+    width: @barWidth;
     font-size: 32px;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+
+    @media (max-width: @mobileBreakpoint) {
+      width: @barWidthMobile;
+    }
  
     .progress-bar {
       position: absolute;
@@ -39,12 +48,16 @@
       overflow: hidden;
 
       .progress-bar-inner {
-        width: 75vw;
+        width: @barWidth;
         height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
         color: @backgroundColour;
+
+        @media (max-width: @mobileBreakpoint) {
+          width: @barWidthMobile;
+        }
       }
     }
   }
