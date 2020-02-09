@@ -1,10 +1,28 @@
 import { Options, ProgressBar } from "./progressBar";
-import { startOfYear, addYears, startOfMonth, addMonths, startOfDay, addDays, startOfHour, addHours, startOfMinute, addMinutes } from "date-fns";
+import {
+  startOfYear,
+  addYears,
+  startOfMonth,
+  addMonths,
+  startOfDay,
+  addDays,
+  startOfHour,
+  addHours,
+  startOfMinute,
+  addMinutes,
+  setHours,
+  setMinutes,
+  setSeconds,
+  setMilliseconds
+} from "date-fns";
 import * as queryString from "query-string";
 
 type QueryOptions = {
-  mode: 'year' | 'month' | 'day' | 'hour' | 'minute'
+  mode: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'work-day'
 }
+
+const resetSeconds = (date: Date) => setSeconds(setMilliseconds(date, 0), 0);
+const resetMinutes = (date: Date) => setMinutes(resetSeconds(date), 0);
 
 const getOptions = (): Options => {
   const queryOptions = queryString.parse(window.location.search) as QueryOptions;
@@ -33,6 +51,13 @@ const getOptions = (): Options => {
         getStartTime: startOfMinute,
         getEndTime: now => startOfMinute(addMinutes(now, 1)),
         name: 'Current minute',
+      };
+    case 'work-day':
+      return {
+        getStartTime: now => setHours(resetMinutes(now), 9),
+        getEndTime: now => setHours(setMinutes(resetSeconds(now), 30), 17),
+        getRolloverTime: now => startOfDay(addDays(now, 1)),
+        name: 'Work day (9am - 5:30pm)',
       };
 
     default:

@@ -4,6 +4,7 @@ export type Options = {
   getStartTime: (now: Date) => Date,
   getEndTime: (now: Date) => Date,
   decimalPlaces?: number,
+  getRolloverTime?: (now: Date) => Date,
   name: string,
 }
 
@@ -15,6 +16,7 @@ export class ProgressBar {
   private endTime!: Date;
   private decimalPlaces!: number;
   private intervalId: number | null = null;
+  private timeoutId: number | null = null;
 
   constructor(options: Options, elementsToUpdate: Element[], bar: HTMLElement) {
     this.options = options;
@@ -22,6 +24,7 @@ export class ProgressBar {
     this.bar = bar;
 
     this.updateBounds();
+    document.addEventListener("visibilitychange", this.visibilityCharge);
   }
 
   private updateBounds = () => {
@@ -29,36 +32,55 @@ export class ProgressBar {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
 
     const now = new Date();
     this.startTime = this.options.getStartTime(now);
     this.endTime = this.options.getEndTime(now);
 
-    const totalMilliseconds = this.endTime.getTime() - this.startTime.getTime();
-    this.decimalPlaces = this.options.decimalPlaces == null
-        ? getNumberOfDecimalPlaces(totalMilliseconds)
-        : this.options.decimalPlaces;
+    if (now < this.startTime) {
+      // The progress bar hasn't started yet
+      this.setDisplayedText(`${this.options.name} not yet started`);
+      this.timeoutId = setTimeout(this.updateBounds, this.startTime.getTime() - now.getTime());
 
-    const totalUpdates = 100 * (10 ** this.decimalPlaces);
-    const millisecondsPerUpdate = totalMilliseconds / totalUpdates;
+    } else if (now >= this.endTime && this.options.getRolloverTime) {
+      // The progress bar has already finished
+      const rollover = this.options.getRolloverTime(now);
+      this.bar.style.transitionDuration = '0ms';
+      this.bar.style.width = '100%';
+      this.setDisplayedText(`${this.options.name} has finished`);
+      this.timeoutId = setTimeout(this.updateBounds, rollover.getTime() - now.getTime());
 
-    const percentage = getPercentage(this.startTime, this.endTime, now);
-    this.setDisplayedValue(percentage);
-
-    const millisecondsUntilEndTime = this.endTime.getTime() - now.getTime();
-
-    this.startIntervalAtNextTick(millisecondsPerUpdate, millisecondsUntilEndTime);
-
-    this.animateBar(percentage, millisecondsUntilEndTime);
-    setTimeout(this.updateBounds, millisecondsUntilEndTime);
-    document.addEventListener("visibilitychange", this.visibilityCharge);
+    } else {
+      // The progress bar is actually in progress, so we can update it as usual
+      const totalMilliseconds = this.endTime.getTime() - this.startTime.getTime();
+      this.decimalPlaces = this.options.decimalPlaces == null
+          ? getNumberOfDecimalPlaces(totalMilliseconds)
+          : this.options.decimalPlaces;
+  
+      const totalUpdates = 100 * (10 ** this.decimalPlaces);
+      const millisecondsPerUpdate = totalMilliseconds / totalUpdates;
+  
+      const percentage = getPercentage(this.startTime, this.endTime, now);
+      this.setDisplayedPercentage(percentage);
+  
+      const millisecondsUntilEndTime = this.endTime.getTime() - now.getTime();
+  
+      this.startIntervalAtNextTick(millisecondsPerUpdate, millisecondsUntilEndTime);
+  
+      this.animateBar(percentage, millisecondsUntilEndTime);
+      this.timeoutId = setTimeout(this.updateBounds, millisecondsUntilEndTime);
+    }
   };
 
   private startIntervalAtNextTick = (millisecondsPerUpdate: number, millisecondsUntilEndTime: number) => {
     setTimeout(() => {
       if (this.intervalId == null) { // Don't do anything if there's already another interval running
-        this.intervalId = setInterval(this.updateDisplayedValue, millisecondsPerUpdate);
-        this.updateDisplayedValue();
+        this.intervalId = setInterval(this.updateDisplayedPercentage, millisecondsPerUpdate);
+        this.updateDisplayedPercentage();
       }
     },
     millisecondsUntilEndTime % millisecondsPerUpdate);
@@ -70,8 +92,10 @@ export class ProgressBar {
     if (document.visibilityState === 'visible') {
       const now = new Date();
       const percentage = getPercentage(this.startTime, this.endTime, now);
-      const millisecondsUntilEndTime = this.endTime.getTime() - now.getTime();
-      this.animateBar(percentage, millisecondsUntilEndTime);
+      if (this.startTime <= now && now <= this.endTime) {
+        const millisecondsUntilEndTime = this.endTime.getTime() - now.getTime();
+        this.animateBar(percentage, millisecondsUntilEndTime);
+      }
     }
   };
 
@@ -86,14 +110,15 @@ export class ProgressBar {
     });
   };
 
-  private updateDisplayedValue = () =>
-    this.setDisplayedValue(getPercentage(this.startTime, this.endTime, new Date()));
+  private updateDisplayedPercentage = () =>
+    this.setDisplayedPercentage(getPercentage(this.startTime, this.endTime, new Date()));
 
-  private setDisplayedValue = (percentage: number) => {
-    const textToShow = truncateToDecimalPlaces(percentage, this.decimalPlaces) + '%';
+  private setDisplayedPercentage = (percentage: number) =>
+    this.setDisplayedText(truncateToDecimalPlaces(percentage, this.decimalPlaces) + '%');
 
+  private setDisplayedText = (text: string) => {
     this.elementsToUpdate.forEach(element => {
-      element.innerHTML = textToShow;
+      element.innerHTML = text;
     });
-  }
+  };
 }
