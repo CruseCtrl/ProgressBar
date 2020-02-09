@@ -2,7 +2,14 @@ export const getPercentage = (start: Date, end: Date, now: Date) => {
   const startTime = start.getTime();
   const endTime = end.getTime();
   const nowTime = now.getTime();
-  return 100 * (nowTime - startTime) / (endTime - startTime);
+  const percentage = 100 * (nowTime - startTime) / (endTime - startTime);
+  if (percentage < 0) {
+    return 0;
+  } else if (percentage > 100) {
+    return 100;
+  } else {
+    return percentage;
+  }
 };
 
 // https://stackoverflow.com/a/11818658/4921052

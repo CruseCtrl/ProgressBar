@@ -24,7 +24,7 @@ export class ProgressBar {
     this.bar = bar;
 
     this.updateBounds();
-    document.addEventListener("visibilitychange", this.visibilityCharge);
+    document.addEventListener("visibilitychange", this.onVisibilityChange);
   }
 
   private updateBounds = () => {
@@ -71,7 +71,7 @@ export class ProgressBar {
   
       this.startIntervalAtNextTick(millisecondsPerUpdate, millisecondsUntilEndTime);
   
-      this.animateBar(percentage, millisecondsUntilEndTime);
+      this.animateBar();
       this.timeoutId = setTimeout(this.updateBounds, millisecondsUntilEndTime);
     }
   };
@@ -88,23 +88,21 @@ export class ProgressBar {
 
   // Some browsers (Chrome & Firefox) disable css animations when the tab is in the background,
   // so we need to reset the bar when the tab is visible again
-  private visibilityCharge = () => {
+  private onVisibilityChange = () => {
     if (document.visibilityState === 'visible') {
       const now = new Date();
-      const percentage = getPercentage(this.startTime, this.endTime, now);
       if (this.startTime <= now && now <= this.endTime) {
-        const millisecondsUntilEndTime = this.endTime.getTime() - now.getTime();
-        this.animateBar(percentage, millisecondsUntilEndTime);
+        this.animateBar();
       }
     }
   };
 
-  private animateBar = (percentage: number, millisecondsUntilEndTime: number) => {
+  private animateBar = () => {
     this.bar.style.transitionDuration = '0ms';
     window.requestAnimationFrame(() => {
-      this.bar.style.width = percentage + '%';
+      this.bar.style.width = getPercentage(this.startTime, this.endTime, new Date()) + '%';
       window.requestAnimationFrame(() => {
-        this.bar.style.transitionDuration = `${millisecondsUntilEndTime}ms`;
+        this.bar.style.transitionDuration = `${this.endTime.getTime() - (new Date()).getTime()}ms`;
         this.bar.style.width = '100%';
       });
     });
